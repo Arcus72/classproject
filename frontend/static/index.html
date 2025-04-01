@@ -3,62 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimal Todo List</title>
+    <title>Minimal shop list</title>
     <link rel="stylesheet" href="style.css">
 
 
 </head>
 <body>
-    <h1>Todo List</h1>
+    <h1>Shop List</h1>
     <input type="text" id="newItem" placeholder="Enter a new item">
-    <button onclick="addItem()">Add</button>
-    <ul id="todoList"></ul>
+    <button>Add</button>
+    <ul id="shoplist"></ul>
 
-    <script>
-        const API_URL = 'http://127.0.0.1:5000';
-
-        // async function fetchTodos() {
-        //     const response = await fetch(`${API_URL}/api/data`);
-
-        //      const todos = await response.json();
-        //      console.log(todos)
-        //     // const list = document.getElementById('todoList');
-        //     // list.innerHTML = '';
-        //     // todos.forEach(todo => {
-        //     //     const li = document.createElement('li');
-        //     //     li.textContent = todo.content;
-        //     //     const deleteBtn = document.createElement('button');
-        //     //     deleteBtn.textContent = 'Delete';
-        //     //     deleteBtn.onclick = () => deleteItem(todo._id);
-        //     //     li.appendChild(deleteBtn);
-        //     //     list.appendChild(li);
-        //     // });
-        // }
-
-        // fetchTodos();
-
-
-    </script>
-    <script>
-        async function sendData() {
-            // const input = document.getElementById("userInput").value;
-
-            const response = await fetch("http://127.0.0.1:5000/api/data", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ message: "Lorem ipsum" })
-            });
-
-
-
-            const data = await response.json();
-            console.log(data.response,'response')
-            // document.getElementById("response").textContent = data.response;
-        }
-        sendData();
-    </script>
+    <script src="index.js"></script>
 
 </body>
 </html>

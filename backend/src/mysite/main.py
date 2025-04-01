@@ -1,47 +1,62 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import mysql.connector
 import os
 
-app = Flask(_name_)
+app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
-# Dane do połączenia z bazą MySQL pobrane z docker-compose
 db_config = {
-    "host": os.getenv("MYSQL_HOST", "mysql"),
-    "user": os.getenv("MYSQL_USER", "user"),
-    "password": os.getenv("MYSQL_PASSWORD", "password"),
-    "database": os.getenv("MYSQL_DATABASE", "mydatabase")
+    "host": "localhost",
+    "user": "root",
+    "password": "",
+    "database": "shoplist"
 }
 
-# Funkcja do nawiązywania połączenia
 def get_db_connection():
     return mysql.connector.connect(**db_config)
 
-# Endpoint dodający dane do bazy
+
 @app.route("/api/data", methods=["POST"])
 def add_data():
     data = request.json
     message = data.get("message", "")
-
+    print(message)
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO messages (content) VALUES (%s)", (message,))
+    cursor.execute(f"INSERT INTO items (name) VALUES ('{message}')")
     conn.commit()
     cursor.close()
     conn.close()
 
     return jsonify({"response": f"Dodano do bazy: {message}"}), 201
 
-# Endpoint pobierający dane z bazy
+
 @app.route("/api/data", methods=["GET"])
 def get_data():
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT content FROM messages")
+    cursor.execute("SELECT id, name FROM items")
     messages = cursor.fetchall()
     cursor.close()
     conn.close()
 
-    return jsonify({"messages": [msg[0] for msg in messages]})
+    return jsonify(messages)
 
-if _name_ == "_main_":
+
+@app.route("/api/data/<string:id>", methods=["DELETE"])
+def delete_data(id):
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM items WHERE id= %s", (id,))
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({"message": f"Deleted item: {id}"})
+
+if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
