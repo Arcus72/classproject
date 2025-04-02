@@ -46,13 +46,10 @@ def get_data():
 
 @app.route("/api/data/<string:id>", methods=["DELETE"])
 def delete_data(id):
-    
     conn = get_db_connection()
     cursor = conn.cursor()
-
     cursor.execute("DELETE FROM items WHERE id= %s", (id,))
     conn.commit()
-
     cursor.close()
     conn.close()
 
