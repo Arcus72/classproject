@@ -1,13 +1,16 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from asgiref.wsgi import WsgiToAsgi
 import mysql.connector
 import os
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
+#CORS(app, resources={r"/api/*": {"origins": "*"}})
+#CORS(app)
 
 db_config = {
-    "host": "localhost",
+    "host": "host.docker.internal",
     "user": "root",
     "password": "",
     "database": "shoplist"
@@ -30,6 +33,14 @@ def add_data():
     conn.close()
 
     return jsonify({"response": f"Dodano do bazy: {message}"}), 201
+
+@app.route("/api/data", methods=["OPTIONS"])
+def options():
+    response = jsonify({"message": "CORS preflight successful"})
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return response
 
 
 @app.route("/api/data", methods=["GET"])
@@ -55,5 +66,11 @@ def delete_data(id):
 
     return jsonify({"message": f"Deleted item: {id}"})
 
+asgi_app = WsgiToAsgi(app)
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    
+    # Uruchomienie ASGI (np. z użyciem Uvicorn)
+    import uvicorn
+    uvicorn.run(asgi_app, host="0.0.0.0", port=5000)
+    #app.run(host="0.0.0.0", port=5000)
