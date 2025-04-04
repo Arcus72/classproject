@@ -1,59 +1,49 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-import mysql.connector
-import os
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+import firebase_admin
+from firebase_admin import credentials, db
+import uvicorn
 
-app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
+# Inicjalizacja Firebase
+cred = credentials.Certificate("/app/shoplist-b42d0-firebase-adminsdk-fbsvc-be3429d055.json")  # Ścieżka do klucza serwisowego
+firebase_admin.initialize_app(cred, {
+    'databaseURL': 'https://shoplist-b42d0-default-rtdb.firebaseio.com/'
+})
 
-db_config = {
-    "host": "localhost",
-    "user": "root",
-    "password": "",
-    "database": "shoplist"
-}
+app = FastAPI()
 
-def get_db_connection():
-    return mysql.connector.connect(**db_config)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+@app.post("/api/data")
+async def add_data(data: dict):
+    messages = data.get("messages", [])
+    if not isinstance(messages, list):
+        raise HTTPException(status_code=400, detail="Messages should be a list")
 
-@app.route("/api/data", methods=["POST"])
-def add_data():
-    data = request.json
-    message = data.get("message", "")
-    print(message)
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute(f"INSERT INTO items (name) VALUES ('{message}')")
-    conn.commit()
-    cursor.close()
-    conn.close()
+    ref = db.reference("items")
+    ref.set(messages)
 
-    return jsonify({"response": f"Dodano do bazy: {message}"}), 201
+    return JSONResponse(content={"response": "Zaktualizowano listę", "messages": messages}, status_code=201)
 
+@app.get("/api/data")
+async def get_data():
+    ref = db.reference("items")
+    items = ref.get() or []
+    return {"messages": items}
 
-@app.route("/api/data", methods=["GET"])
-def get_data():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, name FROM items")
-    messages = cursor.fetchall()
-    cursor.close()
-    conn.close()
-
-    return jsonify(messages)
-
-
-@app.route("/api/data/<string:id>", methods=["DELETE"])
-def delete_data(id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM items WHERE id= %s", (id,))
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-    return jsonify({"message": f"Deleted item: {id}"})
+@app.delete("/api/data")
+async def delete_data():
+    ref = db.reference("items")
+    ref.delete()
+    return JSONResponse(content={"message": "Deleted all items"})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    uvicorn.run(app, host="0.0.0.0", port=5000)
+

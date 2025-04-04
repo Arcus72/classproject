@@ -1,19 +1,17 @@
-FROM python:3.12-slim AS builder
+FROM python:3.12-slim
 
 WORKDIR /app
 
-COPY pyproject.toml requirements.txt ./
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir wheels -r requirements.txt
+# Zainstalowanie brakujących zależności systemowych
+RUN apt-get update && apt-get install -y g++ && rm -rf /var/lib/apt/lists/*
 
-COPY src src
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir wheels .
+COPY requirements.txt requirements.txt
+COPY shoplist-b42d0-firebase-adminsdk-fbsvc-be3429d055.json /app/shoplist-b42d0-firebase-adminsdk-fbsvc-be3429d055.json
 
+RUN pip install --no-cache-dir -r requirements.txt
 
-FROM python:3.12-slim AS runner
+COPY src/mysite mysite
 
-COPY --from=builder /app/wheels /wheels
-RUN pip install --no-cache /wheels/* && rm -rf /wheels
+EXPOSE 5000
 
-EXPOSE 8000
-
-CMD ["uvicorn", "mysite.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "mysite.main:app", "--host", "0.0.0.0", "--port", "5000"]
