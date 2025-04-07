@@ -6,7 +6,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y g++ && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt requirements.txt
-COPY shoplist-b42d0-firebase-adminsdk-fbsvc-be3429d055.json /app/shoplist-b42d0-firebase-adminsdk-fbsvc-be3429d055.json
+COPY shoplist-b42d0-firebase-adminsdk-fbsvc-29230bf90e.json /app/shoplist-b42d0-firebase-adminsdk-fbsvc-29230bf90e.json
 
 RUN pip install --no-cache-dir -r requirements.txt
 
