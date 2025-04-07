@@ -5,7 +5,7 @@ import firebase_admin
 from firebase_admin import credentials, db
 import uvicorn
 
-cred = credentials.Certificate("/app/shoplist-b42d0-firebase-adminsdk-fbsvc-29230bf90e.json")
+cred = credentials.Certificate("/app/shoplist-key.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://shoplist-b42d0-default-rtdb.firebaseio.com/'
 })
