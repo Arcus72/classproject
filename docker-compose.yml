@@ -1,0 +1,18 @@
+services:
+  backend:
+    image: mysite-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: "runner"
+    ports:
+    - 5000:5000
+
+  frontend:
+    image: mysite
+    container_name: mysite
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+    - 80:80
